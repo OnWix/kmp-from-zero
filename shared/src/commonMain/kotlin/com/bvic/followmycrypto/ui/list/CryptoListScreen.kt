@@ -50,6 +50,7 @@ fun CryptoListScreen(
     CryptoListContent(
         uiState = uiState,
         onRefresh = viewModel::refresh,
+        // Les actions sont transmises au ViewModel, qui prépare la liste à afficher.
         onSortChange = viewModel::onSortChange,
         onQueryChange = viewModel::onQueryChange,
         onCryptoClick = onCryptoClick,
@@ -90,7 +91,8 @@ fun CryptoListContent(
             )
             is CryptoListUiState.Success -> {
                 Column(modifier = contentModifier) {
-                    OutlinedTextField(
+                    OutlinedTextField( // barre de recherche
+                        // Le ViewModel conserve le texte ; le champ lui transmet chaque modification.
                         value = uiState.query,
                         onValueChange = onQueryChange,
                         label = { Text("Rechercher une crypto") },
@@ -100,7 +102,7 @@ fun CryptoListContent(
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
+                    ) { // liste des 3 filtres
                         FilterChip(
                             selected = uiState.sort == CryptoSort.NAME,
                             onClick = { onSortChange(CryptoSort.NAME) },
@@ -117,12 +119,14 @@ fun CryptoListContent(
                             label = { Text("Variation") },
                         )
                     }
+                    // Garder les contrôles visibles permet de corriger une recherche sans résultat.
                     if (uiState.cryptos.isEmpty()) {
                         Text("Aucune crypto trouvée", modifier = Modifier.padding(16.dp))
                     } else {
                         CryptoList(
                             cryptos = uiState.cryptos,
                             onCryptoClick = onCryptoClick,
+                            // La liste occupe l’espace restant sous la recherche et les boutons.
                             modifier = Modifier.weight(1f),
                         )
                     }
