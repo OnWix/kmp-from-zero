@@ -2,6 +2,7 @@ package com.bvic.followmycrypto.ui.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -105,6 +106,40 @@ fun CryptoDetail(crypto: Crypto, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.titleMedium,
             color = if (crypto.changePercent >= 0) PriceUp else PriceDown,
         )
+        Row(
+
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    text = "Plus haut 24h",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = "Plus bas 24h",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Column {
+                Text(
+                    text = formatPrice(crypto.highPrice),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = formatPrice(crypto.lowPrice),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+
+        }
     }
 }
 
@@ -115,7 +150,7 @@ fun CryptoDetailContentPreview() {
         CryptoDetailContent(
             symbol = "BTC",
             uiState = CryptoDetailUiState.Success(
-                Crypto(symbol = "BTC", name = "Bitcoin", price = 85613.50, changePercent = 0.88),
+                Crypto(symbol = "BTC", name = "Bitcoin", price = 85613.50, changePercent = 0.88, lowPrice = 84200.0, highPrice = 86500.0),
             ),
             onBack = {},
             onRetry = {},
