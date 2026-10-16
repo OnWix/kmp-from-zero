@@ -1,6 +1,7 @@
 package com.bvic.followmycrypto.ui.list
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +12,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +50,9 @@ fun CryptoListScreen(
     CryptoListContent(
         uiState = uiState,
         onRefresh = viewModel::refresh,
+        // Les actions sont transmises au ViewModel, qui prépare la liste à afficher.
+        onSortChange = viewModel::onSortChange,
+        onQueryChange = viewModel::onQueryChange,
         onCryptoClick = onCryptoClick,
         modifier = modifier,
     )
@@ -57,6 +63,8 @@ fun CryptoListScreen(
 fun CryptoListContent(
     uiState: CryptoListUiState,
     onRefresh: () -> Unit,
+    onSortChange: (CryptoSort) -> Unit,
+    onQueryChange: (String) -> Unit,
     onCryptoClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -81,11 +89,49 @@ fun CryptoListContent(
                 onRetry = onRefresh,
                 modifier = contentModifier,
             )
-            is CryptoListUiState.Success -> CryptoList(
-                cryptos = uiState.cryptos,
-                onCryptoClick = onCryptoClick,
-                modifier = contentModifier,
-            )
+            is CryptoListUiState.Success -> {
+                Column(modifier = contentModifier) {
+                    OutlinedTextField( // barre de recherche
+                        // Le ViewModel conserve le texte ; le champ lui transmet chaque modification.
+                        value = uiState.query,
+                        onValueChange = onQueryChange,
+                        label = { Text("Rechercher une crypto") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) { // liste des 3 filtres
+                        FilterChip(
+                            selected = uiState.sort == CryptoSort.NAME,
+                            onClick = { onSortChange(CryptoSort.NAME) },
+                            label = { Text("Nom") },
+                        )
+                        FilterChip(
+                            selected = uiState.sort == CryptoSort.PRICE,
+                            onClick = { onSortChange(CryptoSort.PRICE) },
+                            label = { Text("Prix") },
+                        )
+                        FilterChip(
+                            selected = uiState.sort == CryptoSort.CHANGE,
+                            onClick = { onSortChange(CryptoSort.CHANGE) },
+                            label = { Text("Variation") },
+                        )
+                    }
+                    // Garder les contrôles visibles permet de corriger une recherche sans résultat.
+                    if (uiState.cryptos.isEmpty()) {
+                        Text("Aucune crypto trouvée", modifier = Modifier.padding(16.dp))
+                    } else {
+                        CryptoList(
+                            cryptos = uiState.cryptos,
+                            onCryptoClick = onCryptoClick,
+                            // La liste occupe l’espace restant sous la recherche et les boutons.
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -156,7 +202,7 @@ fun CryptoRowPreview() {
 @Composable
 fun CryptoListContentPreview() {
     FollowMyCryptoTheme {
-        CryptoListContent(uiState = CryptoListUiState.Success(previewCryptos), onRefresh = {}, onCryptoClick = {})
+        CryptoListContent(uiState = CryptoListUiState.Success(previewCryptos), onRefresh = {}, onSortChange = {}, onQueryChange = {}, onCryptoClick = {})
     }
 }
 
@@ -164,6 +210,20 @@ fun CryptoListContentPreview() {
 @Composable
 fun CryptoListErrorPreview() {
     FollowMyCryptoTheme {
-        CryptoListContent(uiState = CryptoListUiState.Error("Impossible de charger les cours."), onRefresh = {}, onCryptoClick = {})
+        CryptoListContent(uiState = CryptoListUiState.Error("Impossible de charger les cours."), onRefresh = {}, onSortChange = {}, onQueryChange = {}, onCryptoClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CryptoListEmptyPreview() {
+    FollowMyCryptoTheme {
+        CryptoListContent(
+            uiState = CryptoListUiState.Success(emptyList(), query = "xyz"),
+            onRefresh = {},
+            onSortChange = {},
+            onQueryChange = {},
+            onCryptoClick = {},
+        )
     }
 }

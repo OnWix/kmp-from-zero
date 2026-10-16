@@ -7,4 +7,5 @@ data class Crypto(
     val changePercent: Double,
     val lowPrice: Double = 0.0,
     val highPrice: Double = 0.0,
+    //test
     )
